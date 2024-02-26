@@ -1,0 +1,88 @@
+{
+  "name": "my-lesson",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "electron-store": "^8.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "main": "app/index.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:react\" \"npm run start:electron\"",
+    "start1": "electron-forge start",
+    "start:react": "cross-env BROWSER=none react-app-rewired start",
+    "start:electron": "wait-on http://localhost:3000 && electron app",
+    "build": "npm run build:copy && npm run pack",
+    "build:react": "react-app-rewired build",
+    "build:copy": "npm run build:react && npm run copy:electron",
+    "pack": "electron-builder",
+    "copy:electron": "cp -r ./app/. ./build",
+    "test": "react-app-rewired test --env=jsdom",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.3.0",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "devtron": "^1.4.0",
+    "electron": "^29.0.1",
+    "electron-debug": "^3.2.0",
+    "electron-devtools-installer": "^3.2.0",
+    "electron-is-dev": "^3.0.1",
+    "esm": "^3.2.25",
+    "react-app-rewired": "^2.2.1",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "productName": "Electron-React-Test",
+    "extends": null,
+    "files": [
+      "build/**/*"
+    ],
+    "mac": {
+      "icon": "icons/icon.png"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "icons/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "icons/icon.png"
+    },
+    "extraMetadata": {
+      "main": "build/index.js"
+    },
+    "directories": {
+      "buildResources": "assets"
+    }
+  }
+}
