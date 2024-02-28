@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain, protocol, net } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
-const ElectronStore = require('electron-store');
+const ElectronStore = require("electron-store");
 ElectronStore.initRenderer();
 
 let win;
@@ -29,7 +29,7 @@ function createWindow() {
     const isDev = module.default;
     if (isDev) {
       win.loadURL(devUrl);
-      win.webContents.openDevTools();
+      // win.webContents.openDevTools();
     } else {
       win.loadURL(localUrl);
     }
@@ -42,28 +42,42 @@ function createWindow() {
 }
 
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'atom', privileges: { bypassCSP: true, stream: true } }
-])
+  { scheme: "atom", privileges: { bypassCSP: true, stream: true } },
+]);
 
 app.whenReady().then(() => {
-
-  protocol.handle('atom', (request) => {
+  protocol.handle("atom", (request) => {
+    
     let url = request.url.slice(6);
     url = decodeURIComponent(path.normalize(url));
     // url = url.replaceAll(' ', '\\\ ');
-    url = path.resolve(url)
-    console.log('>>> url', request.url, url)
-    let stat = fs.statSync(url);
-    let videoFile = fs.readFileSync(url);
+    url = path.resolve(url);
+  
+    const videoPath = url;
+    const videoSize = fs.statSync(videoPath).size;
+    
+    const chunkSize = 10 ** 6; // 1 mb
+    const range = request.headers.get("range");
+    const start = Number(range.replace(/\D/g, ""));
+ 
+    const end = Math.min(start + chunkSize, videoSize - 1);
+    const contentLength = end - start + 1;
+ 
+
     return new Response(
-      videoFile,
-      { headers: { 
-        // 'content-type': 'video/mpeg4', 
-        'Content-Length': stat.size 
-      } }
-    );
-    //Accept-Ranges
-  })
+      fs.createReadStream(videoPath, { start }), 
+      // fs.readFileSync(videoPath), 
+    {
+      status: 206,
+      headers: {
+        "content-type": "video/mpeg4",
+        "Content-Length": videoSize,
+        "Accept-Ranges": "bytes",
+        "Content-Range": `bytes ${start}-${end}/${videoSize}`,
+      },
+    });
+ 
+  });
 
   // protocol.registerFileProtocol('atom', (request, callback) => {
   //   const url = request.url.slice(6)
@@ -72,20 +86,19 @@ app.whenReady().then(() => {
   ipcMain.handle("ping", () => "pong");
   const lessonDataPrefix = "lessonData";
   // lessonStore.delete(lessonDataPrefix);
-  ipcMain.on("readStore", (event) =>  {
+  ipcMain.on("readStore", (event) => {
     let lessonData = lessonStore.get(lessonDataPrefix);
- 
+
     if (!lessonData) {
       lessonData = {};
       lessonStore.set(lessonDataPrefix, lessonData);
     }
     event.returnValue = lessonData;
-
   });
-  ipcMain.on("setStoreByKey", (event, key, data) =>  {
+  ipcMain.on("setStoreByKey", (event, key, data) => {
     event.returnValue = lessonStore.set(`${lessonDataPrefix}.${key}`, data);
   });
-  ipcMain.on("getStoreByKey", (event, key, data) =>  {
+  ipcMain.on("getStoreByKey", (event, key, data) => {
     event.returnValue = lessonStore.get(`${lessonDataPrefix}.${key}`);
   });
   createWindow();

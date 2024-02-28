@@ -21,7 +21,7 @@ function App() {
   const [showInfo, setShowInfo] = useState();
   const [progress, setProgress] = useState({
     completed: 0,
-    total: 0
+    total: 0,
   });
 
   const main = async () => {
@@ -30,20 +30,20 @@ function App() {
     let numsInList = 0;
     let numsOfLessons = lessonList.length;
     let numsOfCompleted = 0;
-    lessonList = lessonList.filter(lesson => {
-        if (lesson.info.completed) {
-          numsOfCompleted++;
-          numsInList++;
-          return true;
-        }
-        if (numsInList <= 10) {
-          numsInList++;
-          return true;
-        }
-    })
+    lessonList = lessonList.filter((lesson) => {
+      if (lesson.info.completed) {
+        numsOfCompleted++;
+        numsInList++;
+        return true;
+      }
+      if (numsInList <= 10) {
+        numsInList++;
+        return true;
+      }
+    });
     setProgress({
       completed: numsOfCompleted,
-      total: numsOfLessons
+      total: numsOfLessons,
     });
     setLessons(lessonList);
   };
@@ -65,8 +65,7 @@ function App() {
     }
     video.addEventListener("playing", () => {
       playStartTime = Date.now();
-      console.log(">>>> playing");
-      // updateStatus("playing");
+      updateStatus("playing");
     });
     video.addEventListener("pause", () => {
       uploadRecord();
@@ -76,14 +75,19 @@ function App() {
       uploadRecord();
       updateStatus("playend");
     });
+    // video.addEventListener("seeked", () => {
+    //   console.log('>>> seeked', video.currentTime)
+    // })
+    // video.addEventListener("timeupdate", () => {
+    //   console.log('>>> timeupdate', video.currentTime)
+    // })
     video.addEventListener("canplay", () => {
-      // video.currentTime = 120;
-      video.play();
+      if (!video.currentTime && playing.info.lastTimePoint > 0) {
+        video.currentTime = playing.info.lastTimePoint;
+      }
 
-      // not working under file:// protocol
-      // if (playing.info.lastTimePoint > 0) {
-      //   video.currentTime = playing.info.lastTimePoint;
-      // }
+      video.play();
+     
     });
   };
   useEffect(() => {
@@ -94,7 +98,7 @@ function App() {
   }, [playing]);
 
   const showLogs = (lessonInfo) => {
-    console.log('>>>  lessonInfo', lessonInfo)
+    console.log(">>>  lessonInfo", lessonInfo);
     setShowInfo(lessonInfo);
   };
 
@@ -110,11 +114,11 @@ function App() {
   };
   function formatDuration(prefix, secs) {
     if (!secs) {
-      return '';
+      return "";
     }
-    let mins = Math.floor(secs/60);
+    let mins = Math.floor(secs / 60);
     secs = Math.round(secs - mins * 60);
-    let str = prefix + ' ';
+    let str = prefix + " ";
     if (mins) {
       str += `${mins} 分 `;
     }
@@ -129,9 +133,17 @@ function App() {
         <dialog open>
           <p>{showInfo.name}</p>
           <ul>
-            {showInfo.record.map(record => {
-                let [time, duration, timePoint] = record;
-                return duration && <li>{(new Date(time)).toLocaleString()} : {formatDuration('学习了', duration)}  {formatDuration(',学习到', timePoint)}</li>;
+            {showInfo.record.map((record, i) => {
+              let [time, duration, timePoint] = record;
+              return (
+                duration && (
+                  <li key={i}>
+                    {new Date(time).toLocaleString()} :{" "}
+                    {formatDuration("学习了", duration)}{" "}
+                    {formatDuration(",学习到", timePoint)}
+                  </li>
+                )
+              );
             })}
           </ul>
           <form method="dialog">
@@ -187,7 +199,7 @@ function App() {
           })}
         </div>
         <div className="lesson-progress">
-            {progress.completed} / {progress.total}
+          {progress.completed} / {progress.total}
         </div>
       </div>
     </div>
