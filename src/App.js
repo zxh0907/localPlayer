@@ -23,7 +23,7 @@ function App() {
     completed: 0,
     total: 0,
   });
-
+  console.log('>>> playing', playing?.info);
   const main = async () => {
     const response = await version.ping();
     let lessonList = getLessonList();
@@ -94,7 +94,7 @@ function App() {
       updateStatus("pause");
     });
     video.addEventListener("ended", () => {
-      console.log('>>> ended', video.currentTime)
+      // console.log('>>> ended', video.currentTime)
       uploadRecord();
       updateStatus("playend");
     });
@@ -147,6 +147,7 @@ function App() {
     }
     setError("");
     const lesson = lessons[lessonIndex];
+    console.log('>>>> switch lesson', lessonIndex, lesson)
     setPlaying(lesson);
   };
   function formatDuration(prefix, secs) {
@@ -199,8 +200,10 @@ function App() {
               controls
               controlsList="nodownload noplaybackrate"
               playbackrate="1"
+              src={playing.filePath}
+              type="video/mp4"
             >
-              <source src={playing.filePath} type="video/mp4" />
+               
             </video>
           </div>
         )}
