@@ -58,23 +58,33 @@ app.whenReady().then(() => {
     
     const chunkSize = 10 ** 6; // 1 mb
     const range = request.headers.get("range");
-    const start = Number(range.replace(/\D/g, ""));
+    let start = Number(range.replace(/\D/g, ""));
  
-    const end = Math.min(start + chunkSize, videoSize - 1);
-    const contentLength = end - start + 1;
+    const end = Math.min(start + chunkSize, videoSize);
+    // const contentLength = end - start + 1;
  
-
+    console.log(`request: ${start}-${end}/${videoSize}`)
+    if (start >= end) {
+      start = end - 200;
+    }
+    // if (start >= videoSize) {
+    //   return new Response('', {status: 200})
+    // }
+    let headers = {
+      "content-type": "video/mpeg4",
+      "Content-Length": videoSize,
+      "Accept-Ranges": "bytes",
+      "Content-Range": `bytes ${start}-${end}/*`,
+    }
+    if (start + chunkSize >= videoSize) {
+      delete headers["Content-Range"];
+    }
     return new Response(
-      fs.createReadStream(videoPath, { start }), 
+      fs.createReadStream(videoPath, { start, end }), 
       // fs.readFileSync(videoPath), 
     {
       status: 206,
-      headers: {
-        "content-type": "video/mpeg4",
-        "Content-Length": videoSize,
-        "Accept-Ranges": "bytes",
-        "Content-Range": `bytes ${start}-${end}/${videoSize}`,
-      },
+      headers
     });
  
   });

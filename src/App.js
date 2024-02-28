@@ -60,8 +60,30 @@ function App() {
       }
     }
     function updateStatus(status) {
-      let currentTimePoint = "playend" === status ? 0 : video.currentTime;
+      let currentTimePoint = "playend" === status ? 0 : Math.round(video.currentTime);
       updateLessonStatus(playing, status, currentTimePoint);
+      if ("playend" === status) {
+        let playingClone = {...playing};
+        playingClone.info.completed = true;
+        
+        setPlaying(playingClone);
+        let lessonsClone = [...lessons];
+
+      
+        lessonsClone = lessonsClone.map( lesson => {
+          
+          if (lesson.key === playing.key) {
+            lesson.info.completed = true;
+          }
+          return lesson;
+        })
+        setLessons(lessonsClone);
+
+        setShowInfo({
+          'name': '恭喜完成本课',
+          'content': 'You are so great!🎉'
+        });
+      }
     }
     video.addEventListener("playing", () => {
       playStartTime = Date.now();
@@ -72,6 +94,7 @@ function App() {
       updateStatus("pause");
     });
     video.addEventListener("ended", () => {
+      console.log('>>> ended', video.currentTime)
       uploadRecord();
       updateStatus("playend");
     });
@@ -82,11 +105,25 @@ function App() {
     //   console.log('>>> timeupdate', video.currentTime)
     // })
     video.addEventListener("canplay", () => {
+      console.log('>>> ', video.duration, playing.info.lastTimePoint )
       if (!video.currentTime && playing.info.lastTimePoint > 0) {
-        video.currentTime = playing.info.lastTimePoint;
+        
+        video.currentTime = video.duration - playing.info.lastTimePoint < 60 ? 
+                video.duration - 60 : 
+                playing.info.lastTimePoint;
       }
-
-      video.play();
+       
+      video.play().catch(err => {
+        console.log(err)
+        if (Math.abs(video.currentTime - video.duration) <= 1) {
+          uploadRecord();
+          updateStatus("playend");
+        }
+      });
+      
+      
+      
+      
      
     });
   };
@@ -132,8 +169,9 @@ function App() {
       {showInfo && (
         <dialog open>
           <p>{showInfo.name}</p>
+          <div>{showInfo.content}</div>
           <ul>
-            {showInfo.record.map((record, i) => {
+            {showInfo.record?.map((record, i) => {
               let [time, duration, timePoint] = record;
               return (
                 duration && (

@@ -57,9 +57,13 @@ contextBridge.exposeInMainWorld("lessonList", {
   },
   updateStatus: (lesson, status, currentTime) => {
     let info = ipcRenderer.sendSync("getStoreByKey", lesson.key);
-    console.log('>>> lesson', lesson,  status, info)
+    // console.log('>>> lesson', lesson,  status, info)
     info.lastTimePoint = currentTime;
     info.status = status;
+    if ('playend' === status) {
+      info.completed = true;
+    }
+    console.log('>>> updateStatus', info)
     ipcRenderer.sendSync("setStoreByKey", lesson.key, info);
   },
 });

@@ -76,6 +76,6 @@ dialog li {
   width: 20px;
 }
 video.uncompleted::-webkit-media-controls-timeline {
-  display: none;
+  display: none1;
 }
  
