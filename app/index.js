@@ -29,7 +29,7 @@ function createWindow() {
     const isDev = module.default;
     if (isDev) {
       win.loadURL(devUrl);
-      win.webContents.openDevTools();
+      // win.webContents.openDevTools();
     } else {
       win.loadURL(localUrl);
     }
