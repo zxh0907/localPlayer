@@ -11,6 +11,9 @@ import {
   updateLessonStatus,
 } from "./mainTread";
 
+function checkIsValidLesson(lesson) {
+  return lesson.info.name.indexOf('-题-') < 0;
+}
 function App() {
   // const info = `This app is using Chrome (v${version.chrome()}), Node.js (v${version.node()}), and Electron (v${version.electron()})`;
   const videoRef = useRef(null);
@@ -30,22 +33,25 @@ function App() {
     let numsInList = 0;
     let numsOfLessons = lessonList.length;
     let numsOfCompleted = 0;
-    lessonList = lessonList.filter((lesson) => {
+    let lessonSlice = [];
+    for (let i = 0; i < lessonList.length; i++) {
+      let lesson = lessonList[i];
       if (lesson.info.completed) {
         numsOfCompleted++;
+      } else if (checkIsValidLesson(lesson)) {
         numsInList++;
-        return true;
       }
-      if (numsInList <= 10) {
-        numsInList++;
-        return true;
+      lessonSlice.push(lesson);
+      if (numsInList > 10) {
+        break;
       }
-    });
+    }
+     
     setProgress({
       completed: numsOfCompleted,
       total: numsOfLessons,
     });
-    setLessons(lessonList);
+    setLessons(lessonSlice);
   };
   const playLogging = async () => {
     const video = videoRef.current;
@@ -141,7 +147,7 @@ function App() {
 
   const playLesson = (lessonIndex) => {
     const lesson = lessons[lessonIndex];
-    const validLessons = lessons.filter(lesson =>  lesson.info.name.indexOf('-题-') < 0);
+    const validLessons = lessons.filter(checkIsValidLesson);
     const indexInValidLessons = validLessons.findIndex(l => l === lesson);
     console.log('>>>>', lesson, lessonIndex, indexInValidLessons,)
     if (indexInValidLessons >= 0) {
