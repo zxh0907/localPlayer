@@ -7,7 +7,7 @@ ElectronStore.initRenderer();
 
 let win;
 const lessonStore = new ElectronStore();
-
+console.log('>>>> lessonStore', lessonStore.path);
 const devUrl = "http://localhost:3000";
 // 本地文件路径定位到打包的react文件
 const localUrl = `file://${path.join(__dirname, "/index.html")}`;

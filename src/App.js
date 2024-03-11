@@ -140,13 +140,24 @@ function App() {
   };
 
   const playLesson = (lessonIndex) => {
-    const previousLesson = lessons[lessonIndex - 1];
-    if (previousLesson && !previousLesson.info.completed) {
-      setError("先完成之前的课程");
-      return;
+    const lesson = lessons[lessonIndex];
+    const validLessons = lessons.filter(lesson =>  lesson.info.name.indexOf('-题-') < 0);
+    const indexInValidLessons = validLessons.findIndex(l => l === lesson);
+    console.log('>>>>', lesson, lessonIndex, indexInValidLessons,)
+    if (indexInValidLessons >= 0) {
+      const previousLesson = validLessons[indexInValidLessons - 1];
+      console.log('>>>>', previousLesson);
+      if (
+        previousLesson && 
+        !previousLesson.info.completed
+      ) {
+        setError("先完成之前的课程");
+        setPlaying(null);
+        return;
+      }
     }
     setError("");
-    const lesson = lessons[lessonIndex];
+   
     console.log('>>>> switch lesson', lessonIndex, lesson)
     setPlaying(lesson);
   };
@@ -195,7 +206,7 @@ function App() {
         {playing && (
           <div className="video-player">
             <video
-              className={playing.info.completed ? "completed" : "uncompleted"}
+              className={(playing.info.completed || playing.info.name.indexOf('-题-') > 0)? "completed" : "uncompleted"}
               ref={videoRef}
               controls
               controlsList="nodownload noplaybackrate"
